@@ -124,19 +124,23 @@ def training_loop(
     tf_config               = {},       # Options for tflib.init_tf().
     G_smoothing_kimg        = 10.0,     # Half-life of the running average of generator weights.
     D_repeats               = 1,        # How many times the discriminator is trained per G iteration.
-    minibatch_repeats       = 4,        # Number of minibatches to run before adjusting training parameters.
+    minibatch_repeats       = 2,        # Number of minibatches to run before adjusting training parameters.
     reset_opt_for_new_lod   = True,     # Reset optimizer internal state (e.g. Adam moments) when new layers are introduced?
     total_kimg              = 15000,    # Total length of the training, measured in thousands of real images.
-    mirror_augment          = False,    # Enable mirror augment?
+    mirror_augment          = True,    # Enable mirror augment?
     drange_net              = [-1,1],   # Dynamic range used when feeding image data to the networks.
     image_snapshot_ticks    = 1,        # How often to export image snapshots?
-    network_snapshot_ticks  = 10,       # How often to export network snapshots?
+    network_snapshot_ticks  = 1,       # How often to export network snapshots?
     save_tf_graph           = False,    # Include full TensorFlow computation graph in the tfevents file?
     save_weight_histograms  = False,    # Include weight histograms in the tfevents file?
-    resume_run_id           = None,     # Run ID or network pkl to resume training from, None = start from scratch.
+	resume_run_id           = None,     # Run ID or network pkl to resume training from, None = start from scratch.
     resume_snapshot         = None,     # Snapshot index to resume training from, None = autodetect.
     resume_kimg             = 0.0,      # Assumed training progress at the beginning. Affects reporting and training schedule.
     resume_time             = 0.0):     # Assumed wallclock time at the beginning. Affects reporting.
+    #resume_run_id = "/home/rubenfb14/stylegan/results/00001-sgan-r-1gpu/network-snapshot-002360.pkl",
+    #resume_snapshot         = None,     # Snapshot index to resume training from, None = autodetect.
+    #resume_kimg             = 2360,      # Assumed training progress at the beginning. Affects reporting and training schedule.
+    #resume_time             = 3.11):     # Assumed wallclock time at the beginning. Affects reporting.
 
     # Initialize dnnlib and TensorFlow.
     ctx = dnnlib.RunContext(submit_config, train)
@@ -262,7 +266,6 @@ def training_loop(
                 pkl = os.path.join(submit_config.run_dir, 'network-snapshot-%06d.pkl' % (cur_nimg // 1000))
                 misc.save_pkl((G, D, Gs), pkl)
                 metrics.run(pkl, run_dir=submit_config.run_dir, num_gpus=submit_config.num_gpus, tf_config=tf_config)
-
             # Update summaries and RunContext.
             metrics.update_autosummaries()
             tflib.autosummary.save_summaries(summary_log, cur_nimg)
